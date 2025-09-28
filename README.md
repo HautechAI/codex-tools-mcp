@@ -2,8 +2,21 @@
 
 A minimal [Model Context Protocol](https://modelcontextprotocol.io/) server implemented in Rust that exposes the `update_plan` and `apply_patch` tools used by the Codex GPT-5 model. It lets developers integrate these tools inside any MCP-aware client without running the Codex CLI.
 
-## Build & Run
-**Prerequisite:** install Rust toolchain 1.90.0 or newer (edition 2024 support) before building, e.g. `rustup toolchain install 1.90.0` and `rustup override set 1.90.0` in this directory.
+## Install
+Prebuilt binaries are published on the GitHub Releases page for common platforms:
+
+- Linux: `x86_64-unknown-linux-musl`, `aarch64-unknown-linux-musl`
+- macOS: `x86_64-apple-darwin`, `aarch64-apple-darwin`
+- Windows: `x86_64-pc-windows-msvc`
+
+Download `codex-tools-mcp-vX.Y.Z-<triple>.tar.gz` (or `.zip` on Windows) for your platform, extract, and run the binary.
+
+To verify integrity, a combined `codex-tools-mcp-vX.Y.Z-checksums.txt` file is attached to each release.
+
+Tag format to trigger releases: `vX.Y.Z`.
+
+## Build From Source
+- Rust toolchain: stable recommended. Tentative MSRV is 1.70+; CI enforces stable and checks 1.70 in allow-failure mode until confirmed.
 
 ```bash
 cargo build --release
@@ -28,3 +41,6 @@ OPENAI_API_KEY=your_key python3 scripts/agents_demo.py
 ```
 
 Set `OPENAI_API_KEY` (or export it beforehand) so the Agents SDK can authenticate with OpenAI. This runs the codex MCP binary via stdio and asks it to write `hello world!` into `hello.txt` in the working directory.
+
+## Contributing
+See `CONTRIBUTING.md` for Conventional Commits guidance and development notes. PRs should be squash-merged.
