@@ -1,4 +1,4 @@
-# Codex Update Plan MCP Server
+# Codex Tools MCP Server
 
 A minimal [Model Context Protocol](https://modelcontextprotocol.io/) server implemented in Rust that exposes the `update_plan` and `apply_patch` tools used by the Codex GPT-5 model. It lets developers integrate these tools inside any MCP-aware client without running the Codex CLI.
 
