@@ -46,18 +46,19 @@ jobs:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
       - name: Install cross (for linux/arm64)
-        if: ${{ matrix.use_cross == 'true' }}
+        if: ${{ matrix.use_cross }}
         run: cargo install cross --git https://github.com/cross-rs/cross
       - name: Build (release)
         shell: bash
         run: |
           set -euo pipefail
           if [[ "${{ matrix.use_cross || '' }}" == "true" ]]; then
-            cross build --release --target ${{ matrix.target }}
+            cross build --locked --release --target ${{ matrix.target }}
           else
-            cargo build --release --target ${{ matrix.target }}
+            cargo build --locked --release --target ${{ matrix.target }}
           fi
-      - name: Package artifact
+      - name: Package artifact (non-Windows)
+        if: ${{ matrix.os_name != 'windows' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -67,15 +68,24 @@ jobs:
           OS="${{ matrix.os_name }}"
           ARCH="${{ matrix.arch }}"
           BIN="target/${{ matrix.target }}/release/${NAME}"
-          [[ "$OS" == "windows" ]] && BIN="${BIN}.exe"
           STAGE="dist/${NAME}_${VERSION}_${OS}_${ARCH}"
           mkdir -p "$STAGE"
           cp "$BIN" "$STAGE/"
-          if [[ "$OS" == "windows" ]]; then
-            7z a "${STAGE}.zip" "$STAGE"/*
-          else
-            tar -C "dist" -czf "${STAGE}.tar.gz" "$(basename "$STAGE")"
-          fi
+          tar -C "dist" -czf "${STAGE}.tar.gz" "$(basename "$STAGE")"
+      - name: Package artifact (Windows)
+        if: ${{ matrix.os_name == 'windows' }}
+        shell: pwsh
+        run: |
+          $Name = "$env:BINARY_NAME"
+          $Tag = "${{ github.event.release.tag_name }}"
+          $Version = $Tag.TrimStart('v')
+          $OS = "${{ matrix.os_name }}"
+          $Arch = "${{ matrix.arch }}"
+          $Bin = "target/${{ matrix.target }}/release/$Name.exe"
+          $Stage = "dist/${Name}_${Version}_${OS}_${Arch}"
+          New-Item -ItemType Directory -Force -Path $Stage | Out-Null
+          Copy-Item $Bin $Stage/
+          Compress-Archive -Path "$Stage/*" -DestinationPath "$Stage.zip"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -97,8 +107,15 @@ jobs:
       - name: Generate SHA256 checksums
         shell: bash
         run: |
+          set -euo pipefail
           cd dist
-          shasum -a 256 * > SHA256SUMS.txt
+          shopt -s nullglob
+          files=( *.tar.gz *.zip )
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No packaged artifacts found" >&2
+            exit 1
+          fi
+          sha256sum "${files[@]}" > SHA256SUMS.txt
           cat SHA256SUMS.txt
       - name: Upload assets to existing release
         uses: softprops/action-gh-release@v2
