@@ -34,9 +34,7 @@ fn applies_patch_and_creates_file() {
     {
         let stdin = child.stdin.as_mut().expect("stdin");
         use std::io::Write;
-        stdin
-            .write_all(input.as_bytes())
-            .expect("write stdin");
+        stdin.write_all(input.as_bytes()).expect("write stdin");
     }
 
     let output = child.wait_with_output().expect("collect output");
