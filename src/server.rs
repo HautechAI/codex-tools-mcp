@@ -82,7 +82,7 @@ fn handle_initialize(request_id: Option<Value>, params: Option<Value>) -> io::Re
         return send_error(None, INVALID_REQUEST, "initialize must include an id");
     }
 
-    if !params.as_ref().map_or(false, Value::is_object) {
+    if !params.as_ref().is_some_and(Value::is_object) {
         return send_error(
             request_id,
             INVALID_PARAMS,
