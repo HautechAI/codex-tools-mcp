@@ -18,15 +18,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Check release token
-        if: ${{ !secrets.RELEASE_PLEASE_TOKEN }}
-        run: |
-          echo "Missing required secret RELEASE_PLEASE_TOKEN (fine-grained PAT with contents:rw, pull_requests:rw)." >&2
-          exit 1
       - name: Release Please
         uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          token: ${{ github.token }}
           release-type: rust
           package-name: codex-tools-mcp
           bump-minor-pre-major: true
