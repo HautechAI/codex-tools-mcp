@@ -125,7 +125,7 @@ checksum = "2fd1289c04a9ea8cb22300a459a72a385d7c73d3259e2ed7dcb2af674838cfa9"
 [[package]]
 name = "codex-apply-patch"
 version = "0.0.0"
-source = "git+https://github.com/openai/codex.git?branch=main#325fad1d92cba5e5925459ca9799ccb000fde6d8"
+source = "git+https://github.com/openai/codex.git?rev=a23c1949727a72dbed0c630048a5a1a353eb9168#a23c1949727a72dbed0c630048a5a1a353eb9168"
 dependencies = [
  "anyhow",
  "similar",

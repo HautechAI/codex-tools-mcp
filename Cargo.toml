@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-codex-apply-patch = { git = "https://github.com/openai/codex.git", package = "codex-apply-patch", branch = "main" }
+# Pin to a stable commit (tag rust-v0.43.0) to avoid drift from main and improve reproducibility
+codex-apply-patch = { git = "https://github.com/openai/codex.git", package = "codex-apply-patch", rev = "a23c1949727a72dbed0c630048a5a1a353eb9168" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 log = "0.4"
