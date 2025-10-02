@@ -3,11 +3,6 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-    inputs:
-      release-as:
-        description: 'Force a release version (e.g., 0.2.0) [optional]'
-        required: false
-        type: string
 permissions:
   contents: write
   pull-requests: write
@@ -23,6 +18,3 @@ jobs:
         with:
           token: ${{ github.token }}
           release-type: rust
-          package-name: codex-tools-mcp
-          bump-minor-pre-major: true
-          release-as: ${{ inputs.release-as }}
