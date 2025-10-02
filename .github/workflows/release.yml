@@ -16,7 +16,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       TAG: ${{ github.event.release.tag_name || github.ref_name }}
-      VERSION: ${{ startsWith(github.event.release.tag_name || github.ref_name, 'v') && replace(github.event.release.tag_name || github.ref_name, 'v', '') || (github.event.release.tag_name || github.ref_name) }}
     strategy:
       fail-fast: false
       matrix:
@@ -55,11 +54,12 @@ jobs:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
       - name: Compute version
+        id: version
         shell: bash
         run: |
-          set -euo pipefail
-          # Strip only a single leading 'v' from TAG to compute VERSION.
-          echo "VERSION=${TAG#v}" >> "$GITHUB_ENV"
+          TAG="${{ env.TAG }}"
+          if [[ "$TAG" == v* ]]; then VERSION="${TAG:1}"; else VERSION="$TAG"; fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
       - name: Install cross (for linux/arm64)
         if: ${{ matrix.use_cross }}
         run: cargo install cross --version 0.2.5 --locked
