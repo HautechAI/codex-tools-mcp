@@ -83,14 +83,10 @@ jobs:
           OS="${{ matrix.os_name }}"
           ARCH="${{ matrix.arch }}"
           BIN="target/${{ matrix.target }}/release/${NAME}"
-          STAGE="dist/${NAME}_${VERSION}_${OS}_${ARCH}"
-          ARCHIVE="${STAGE}.tar.gz"
-          mkdir -p "$STAGE"
-          cp "$BIN" "$STAGE/"
-          chmod +x "$STAGE/${NAME}"
-          [ -f README.md ] && cp README.md "$STAGE/" || true
-          [ -f LICENSE ] && cp LICENSE "$STAGE/" || true
-          tar -czf "$ARCHIVE" -C "$STAGE" .
+          RAW="dist/${NAME}_${VERSION}_${OS}_${ARCH}"
+          mkdir -p dist
+          cp "$BIN" "$RAW"
+          chmod +x "$RAW"
       - name: Package artifact (Windows)
         if: ${{ matrix.os_name == 'windows' }}
         shell: pwsh
@@ -99,19 +95,15 @@ jobs:
           $OS = "${{ matrix.os_name }}"
           $Arch = "${{ matrix.arch }}"
           $Bin = "target/${{ matrix.target }}/release/$Name.exe"
-          $Stage = "dist/${Name}_${env:VERSION}_${OS}_${Arch}"
-          New-Item -ItemType Directory -Force -Path $Stage | Out-Null
-          Copy-Item $Bin "$Stage/"
-          if (Test-Path README.md) { Copy-Item README.md "$Stage/" }
-          if (Test-Path LICENSE) { Copy-Item LICENSE "$Stage/" }
-          Compress-Archive -Path "$Stage/*" -DestinationPath "$Stage.zip"
+          $Raw = "dist/${Name}_${env:VERSION}_${OS}_${Arch}.exe"
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item $Bin $Raw
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os_name }}-${{ matrix.arch }}
           path: |
-            dist/*.tar.gz
-            dist/*.zip
+            dist/*
           if-no-files-found: error
           retention-days: 7
   publish:
@@ -129,19 +121,29 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          cd dist
           shopt -s nullglob
-          files=( dist/*.tar.gz dist/*.zip )
+          files=( ${BINARY_NAME}_* )
           if [ ${#files[@]} -eq 0 ]; then
-            echo "No packaged artifacts found" >&2
+            echo "No binaries found" >&2
             exit 1
           fi
-          sha256sum "${files[@]}" > dist/SHA256SUMS.txt
-          cat dist/SHA256SUMS.txt
+          sha256sum "${files[@]}" > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - name: Append release note
+        shell: bash
+        run: |
+          mkdir -p .github
+          cat > .github/release_notes_append.txt <<'EOF'
+          Note: Raw executables are provided. On Unix/macOS, you may need: chmod +x ./codex-tools-mcp_<version>_<os>_<arch>
+          EOF
       - name: Upload assets to existing release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.release.tag_name || github.ref_name }}
           generate_release_notes: false
+          append_body: true
+          body_path: .github/release_notes_append.txt
           files: |
             dist/*
           fail_on_unmatched_files: true
