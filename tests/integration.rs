@@ -47,8 +47,7 @@ fn applies_patch_and_creates_file() {
     let stdout = String::from_utf8(output.stdout).expect("utf8 stdout");
     assert!(
         stdout.contains("\"result\""),
-        "expected responses in stdout: {}",
-        stdout
+        "expected responses in stdout: {stdout}"
     );
 
     let hello_path = dir.path().join("hello.txt");
